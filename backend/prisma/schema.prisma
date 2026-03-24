@@ -1,0 +1,137 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  tasks            Task[]
+  timerSessions    TimerSession[]
+  goals            Goal[]
+  mobileUsage      MobileUsage[]
+  dailyEntries     DailyEntry[]
+  deleteRequests   DeleteRequest[]
+  yearCalculations YearCalculation[]
+}
+
+model DailyEntry {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  date            DateTime
+  workHours       Float    @default(0)
+  studyHours      Float    @default(0)
+  gymCompleted    Boolean  @default(false)
+  waterLiters     Float    @default(0)
+  sleepHours      Float    @default(0)
+  productiveHours Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  target    Float
+  unit      String
+  mandatory Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user           User             @relation(fields: [userId], references: [id])
+  completions    TaskCompletion[]
+  deleteRequests DeleteRequest[]
+}
+
+model TaskCompletion {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  date      DateTime
+  achieved  Float    @default(0)
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id])
+
+  @@unique([taskId, date])
+}
+
+model TimerSession {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  type      String
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int       @default(0)
+  paused    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Goal {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  title         String
+  period        String
+  targetHours   Float
+  achievedHours Float    @default(0)
+  status        String   @default("active")
+  startDate     DateTime
+  endDate       DateTime
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model MobileUsage {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  appName     String
+  minutesUsed Int
+  category    String
+  date        DateTime
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, appName, date])
+}
+
+model DeleteRequest {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  taskId    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+}
+
+model YearCalculation {
+  id                    Int      @id @default(autoincrement())
+  userId                Int
+  year                  Int
+  totalDays             Int
+  workingDays           Int
+  remainingFreeDays     Int
+  totalFreeHours        Float
+  remainingFreeHours    Float
+  productiveHoursPerDay Float
+  calculatedAt          DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
