@@ -27,12 +27,17 @@ export const dashboardService = {
     const productivityScore = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
     const totalMobileMinutes = mobileUsage.reduce((sum, m) => sum + m.minutesUsed, 0)
 
-    const hoursUsed = timerMinutes / 60 + (entry?.workHours ?? 0) + (entry?.studyHours ?? 0)
-    const hoursRemaining = Math.max(0, 24 - hoursUsed - (entry?.sleepHours ?? 0))
+    // Mon–Fri: deduct fixed commitments (sleep 7.5h + office 10h + travel 1h = 18.5h)
+    const dayOfWeek = today.getDay()
+    const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5
+    const totalHours = isWeekday ? 24 - 18.5 : 24 // 5.5h free on weekdays
+
+    const hoursUsed = timerMinutes / 60 + (entry?.studyHours ?? 0)
+    const hoursRemaining = Math.max(0, totalHours - hoursUsed)
 
     return {
       date: today,
-      totalHours: 24,
+      totalHours,
       hoursUsed: Math.round(hoursUsed * 10) / 10,
       hoursRemaining: Math.round(hoursRemaining * 10) / 10,
       productivityScore,

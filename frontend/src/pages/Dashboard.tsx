@@ -26,7 +26,8 @@ export default function Dashboard() {
 
   if (loading) return <div className="flex items-center justify-center h-full text-gray-400">Loading…</div>
 
-  const hoursUsedPct = daily ? Math.round((daily.hoursUsed / 24) * 100) : 0
+  const hoursUsedPct = daily ? Math.round((daily.hoursUsed / daily.totalHours) * 100) : 0
+  const isWeekday = [1, 2, 3, 4, 5].includes(new Date().getDay())
   const mobileHours = mobile ? (mobile.totalMinutes / 60).toFixed(1) : '0'
 
   const pieData = daily
@@ -51,7 +52,7 @@ export default function Dashboard() {
       {/* 24h progress bar */}
       <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
         <div className="flex justify-between text-sm text-gray-400 mb-2">
-          <span>24 Hour Progress</span>
+          <span>{isWeekday ? 'Free Time Today (5.5h available)' : '24 Hour Progress'}</span>
           <span>{hoursUsedPct}% used</span>
         </div>
         <div className="w-full bg-gray-800 rounded-full h-3">
