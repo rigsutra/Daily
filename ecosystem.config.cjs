@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'daily-backend',
-      script: './backend/dist/index.js',
-      cwd: '/root/apps/daily',
+      script: './dist/index.js',
+      cwd: '/root/apps/daily/backend',
       instances: 1,
       exec_mode: 'fork',
       env: {
