@@ -8,7 +8,7 @@ const options: swaggerJsdoc.Options = {
       version: '1.0.0',
       description: 'API for the Daily productivity tracking system',
     },
-    servers: [{ url: 'https://backenddaily.ashishserver.space', description: 'Production' }],
+    servers: [{ url: 'https://backenddaily.ashishserver.space/api-docs', description: 'Production' }],
     components: {
       securitySchemes: {
         bearerAuth: {
