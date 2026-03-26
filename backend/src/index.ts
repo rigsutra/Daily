@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import cron from 'node-cron'
+import swaggerUi from 'swagger-ui-express'
 
 import authRoutes from './routes/auth.routes.js'
 import taskRoutes from './routes/task.routes.js'
@@ -10,11 +11,17 @@ import dashboardRoutes from './routes/dashboard.routes.js'
 import goalRoutes from './routes/goal.routes.js'
 import mobileUsageRoutes from './routes/mobileUsage.routes.js'
 import { prisma } from './db.js'
+import { swaggerSpec } from './swagger.js'
 
 const app = express()
 const PORT = process.env.PORT ?? 3000
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://daily.ashishserver.space',
+  'https://backenddaily.ashishserver.space',
+]
+app.use(cors({ origin: allowedOrigins, credentials: true }))
 app.use(express.json())
 
 app.use('/api/auth', authRoutes)
@@ -25,6 +32,8 @@ app.use('/api/goals', goalRoutes)
 app.use('/api/mobile-usage', mobileUsageRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Cron: update goal statuses daily at midnight
 cron.schedule('0 0 * * *', async () => {
