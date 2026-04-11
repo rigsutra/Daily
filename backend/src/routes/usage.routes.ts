@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth.js'
 
 const router = Router()
 
-router.get('/today', mobileUsageController.getToday)
+router.post('/today', mobileUsageController.syncFromDevice)
+router.post('/link-device', authenticate, mobileUsageController.linkDevice)
 
 export default router

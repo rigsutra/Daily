@@ -17,10 +17,10 @@ model User {
   tasks            Task[]
   timerSessions    TimerSession[]
   goals            Goal[]
-  mobileUsage      MobileUsage[]
   dailyEntries     DailyEntry[]
   deleteRequests   DeleteRequest[]
   yearCalculations YearCalculation[]
+  userDevices      UserDevice[]
 }
 
 model DailyEntry {
@@ -98,16 +98,25 @@ model Goal {
 
 model MobileUsage {
   id          Int      @id @default(autoincrement())
-  userId      Int
+  deviceId    String
   appName     String
+  packageName String
   minutesUsed Int
-  category    String
+  lastUsed    DateTime?
+  category    String   @default("")
   date        DateTime
   createdAt   DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  @@unique([deviceId, packageName, date])
+}
 
-  @@unique([userId, appName, date])
+model UserDevice {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  deviceId  String   @unique
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model DeleteRequest {

@@ -10,6 +10,7 @@ import timerRoutes from './routes/timer.routes.js'
 import dashboardRoutes from './routes/dashboard.routes.js'
 import goalRoutes from './routes/goal.routes.js'
 import mobileUsageRoutes from './routes/mobileUsage.routes.js'
+import usageRoutes from './routes/usage.routes.js'
 import { prisma } from './db.js'
 import { swaggerSpec } from './swagger.js'
 
@@ -30,6 +31,7 @@ app.use('/api/timer', timerRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/goals', goalRoutes)
 app.use('/api/mobile-usage', mobileUsageRoutes)
+app.use('/api/usage', usageRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
 
