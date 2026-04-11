@@ -6,5 +6,5 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dbPath = path.join(__dirname, '..', 'prisma', 'dev.db')
 
-const adapter = new PrismaBetterSqlite3({ url: dbPath })
+const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath.replace(/\\/g, '/')}` })
 export const prisma = new PrismaClient({ adapter } as any)
