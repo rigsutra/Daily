@@ -14,11 +14,21 @@ export const taskService = {
     }),
 
   async deleteTask(userId: number, taskId: number, reason: string) {
-    if (!reason || reason.length < 1000) {
-      throw new Error('Reason must be at least 1000 characters')
-    }
     const task = await taskRepository.findById(taskId)
     if (!task) throw new Error('Task not found')
+    
+    // For mandatory tasks, require a reason of at least 1000 characters
+    if (task.mandatory) {
+      if (!reason || reason.length < 1000) {
+        throw new Error('Reason must be at least 1000 characters for mandatory tasks')
+      }
+    } else {
+      // For non-mandatory tasks, require a non-empty reason
+      if (!reason || reason.trim() === '') {
+        throw new Error('Reason is required for deleting non-mandatory tasks')
+      }
+    }
+    
     await taskRepository.createDeleteRequest({ userId, taskId, reason })
     await taskRepository.delete(taskId)
     return { message: 'Task deleted' }

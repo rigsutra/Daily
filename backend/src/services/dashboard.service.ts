@@ -37,9 +37,9 @@ export const dashboardService = {
     const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5
     const totalHours = isWeekday ? 24 - 18.5 : 24 // 5.5h free on weekdays
 
-    // Calculate hours from task completions where unit is 'hours'
+    // Count achieved hours from tasks whose unit is hour-based (hour / hours, case-insensitive)
     const taskHours = taskCompletions.reduce((sum, c) => {
-      if (c.task && c.task.unit === 'hours') {
+      if (c.task && ['hour', 'hours'].includes(c.task.unit.toLowerCase())) {
         return sum + c.achieved
       }
       return sum
@@ -47,6 +47,8 @@ export const dashboardService = {
 
     const hoursUsed = timerMinutes / 60 + (entry?.workHours ?? 0) + (entry?.studyHours ?? 0) + taskHours
     const hoursRemaining = Math.max(0, totalHours - hoursUsed)
+
+    const timerHours = Math.round((timerMinutes / 60) * 10) / 10
 
     return {
       date: today,
@@ -56,6 +58,8 @@ export const dashboardService = {
       productivityScore,
       workHours: entry?.workHours ?? 0,
       studyHours: entry?.studyHours ?? 0,
+      taskHours: Math.round(taskHours * 10) / 10,
+      timerHours,
       gymCompleted: entry?.gymCompleted ?? false,
       waterLiters: entry?.waterLiters ?? 0,
       sleepHours: entry?.sleepHours ?? 0,

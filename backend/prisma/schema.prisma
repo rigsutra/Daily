@@ -96,28 +96,7 @@ model Goal {
   user User @relation(fields: [userId], references: [id])
 }
 
-model MobileUsage {
-  id          Int      @id @default(autoincrement())
-  deviceId    String
-  appName     String
-  packageName String
-  minutesUsed Int
-  lastUsed    DateTime?
-  category    String   @default("")
-  date        DateTime
-  createdAt   DateTime @default(now())
 
-  @@unique([deviceId, packageName, date])
-}
-
-model UserDevice {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  deviceId  String   @unique
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-}
 
 model DeleteRequest {
   id        Int      @id @default(autoincrement())

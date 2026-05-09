@@ -71,6 +71,8 @@ export interface DailyDashboard {
   productivityScore: number
   workHours: number
   studyHours: number
+  taskHours: number
+  timerHours: number
   gymCompleted: boolean
   waterLiters: number
   sleepHours: number

@@ -172,39 +172,53 @@ export default function Tasks() {
       </div>
 
       {/* Delete modal */}
-      {showDelete && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-900 rounded-2xl p-6 border border-gray-700 w-full max-w-lg space-y-4">
-            <h3 className="text-lg font-semibold text-white">Delete Task</h3>
-            <p className="text-sm text-gray-400">
-              You must provide a reason of at least <span className="text-red-400 font-medium">1000 characters</span> to delete this task.
-            </p>
-            <textarea
-              value={deleteReason}
-              onChange={e => setDeleteReason(e.target.value)}
-              rows={6}
-              placeholder="Explain why you're removing this task from your daily routine…"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-indigo-500"
-            />
-            <p className={`text-xs ${deleteReason.length >= 1000 ? 'text-green-400' : 'text-gray-500'}`}>
-              {deleteReason.length}/1000 characters
-            </p>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-            <div className="flex gap-2">
-              <button
-                onClick={handleDelete}
-                disabled={deleteReason.length < 1000}
-                className="px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-40 text-white text-sm rounded-lg transition-colors"
-              >
-                Delete Task
-              </button>
-              <button onClick={() => { setShowDelete(null); setDeleteReason(''); setError('') }} className="px-4 py-2 bg-gray-800 text-gray-400 text-sm rounded-lg hover:text-white transition-colors">
-                Cancel
-              </button>
+      {showDelete && (() => {
+        const deletingTask = tasks.find(t => t.id === showDelete)
+        const isMandatory = deletingTask?.mandatory ?? false
+        const canDelete = isMandatory ? deleteReason.length >= 1000 : deleteReason.trim().length > 0
+        return (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-700 w-full max-w-lg space-y-4">
+              <h3 className="text-lg font-semibold text-white">Delete Task</h3>
+              {isMandatory ? (
+                <p className="text-sm text-gray-400">
+                  This is a <span className="text-red-400 font-medium">mandatory</span> task. You must provide a reason of at least{' '}
+                  <span className="text-red-400 font-medium">1000 characters</span> to delete it.
+                </p>
+              ) : (
+                <p className="text-sm text-gray-400">
+                  Please provide a reason for removing this task.
+                </p>
+              )}
+              <textarea
+                value={deleteReason}
+                onChange={e => setDeleteReason(e.target.value)}
+                rows={6}
+                placeholder="Explain why you're removing this task from your daily routine…"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-indigo-500"
+              />
+              {isMandatory && (
+                <p className={`text-xs ${deleteReason.length >= 1000 ? 'text-green-400' : 'text-gray-500'}`}>
+                  {deleteReason.length}/1000 characters
+                </p>
+              )}
+              {error && <p className="text-red-400 text-sm">{error}</p>}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDelete}
+                  disabled={!canDelete}
+                  className="px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-40 text-white text-sm rounded-lg transition-colors"
+                >
+                  Delete Task
+                </button>
+                <button onClick={() => { setShowDelete(null); setDeleteReason(''); setError('') }} className="px-4 py-2 bg-gray-800 text-gray-400 text-sm rounded-lg hover:text-white transition-colors">
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }

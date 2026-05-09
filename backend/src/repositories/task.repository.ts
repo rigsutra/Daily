@@ -11,7 +11,11 @@ export const taskRepository = {
     prisma.task.create({ data }),
 
   delete: (id: number) =>
-    prisma.task.delete({ where: { id } }),
+    prisma.$transaction([
+      prisma.taskCompletion.deleteMany({ where: { taskId: id } }),
+      prisma.deleteRequest.deleteMany({ where: { taskId: id } }),
+      prisma.task.delete({ where: { id } })
+    ]),
 
   upsertCompletion: (taskId: number, date: Date, achieved: number) =>
     prisma.taskCompletion.upsert({

@@ -1,6 +1,7 @@
 {
   "name": "daily",
   "private": true,
+  "type": "module",
   "workspaces": [
     "backend",
     "frontend"
@@ -12,5 +13,9 @@
     "build:frontend": "npm run build -w frontend",
     "build": "npm run build -w backend && npm run build -w frontend",
     "start:backend": "npm run start -w backend"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "axios": "^1.16.0"
   }
 }
