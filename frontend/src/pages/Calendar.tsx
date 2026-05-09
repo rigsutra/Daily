@@ -192,10 +192,6 @@ const Calendar: React.FC = () => {
 
           {loading ? (
             <div className="flex items-center justify-center py-12 text-gray-400">Loading…</div>
-          ) : tasksForDate.length === 0 ? (
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 text-center text-gray-500">
-              No task activity recorded for this day.
-            </div>
           ) : (
             <div className="grid grid-cols-3 gap-4">
               {/* Completed */}

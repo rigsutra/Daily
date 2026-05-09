@@ -3,3 +3,6 @@ dist
 .env
 .env.local
 .claude
+.db
+backend/prisma/dev.db
+backend/prisma/test.db
