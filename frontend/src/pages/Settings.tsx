@@ -15,7 +15,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-6 w-full max-w-lg">
       <h2 className="text-2xl font-bold text-white">Settings</h2>
 
       <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 space-y-4">

@@ -34,13 +34,20 @@ export default function Goals() {
     }
   }
 
-  const byPeriod = { weekly: goals.filter(g => g.period === 'weekly'), monthly: goals.filter(g => g.period === 'monthly'), yearly: goals.filter(g => g.period === 'yearly') }
+  const byPeriod = {
+    weekly: goals.filter(g => g.period === 'weekly'),
+    monthly: goals.filter(g => g.period === 'monthly'),
+    yearly: goals.filter(g => g.period === 'yearly'),
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-2xl font-bold text-white">Goals</h2>
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex-shrink-0 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors"
+        >
           + New Goal
         </button>
       </div>
@@ -57,7 +64,7 @@ export default function Goals() {
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500"
             required
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <select
               value={form.period}
               onChange={e => setForm(f => ({ ...f, period: e.target.value }))}
@@ -77,37 +84,50 @@ export default function Goals() {
             />
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">Create</button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-800 text-gray-400 text-sm rounded-lg hover:text-white transition-colors">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">
+              Create
+            </button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-800 text-gray-400 text-sm rounded-lg hover:text-white transition-colors">
+              Cancel
+            </button>
           </div>
         </form>
       )}
 
       {(['weekly', 'monthly', 'yearly'] as const).map(period => (
         <div key={period}>
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3 capitalize">{period} Goals</h3>
+          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">{period} Goals</h3>
           {byPeriod[period].length === 0 ? (
             <p className="text-sm text-gray-600">No {period} goals yet.</p>
           ) : (
             <div className="space-y-3">
               {byPeriod[period].map(goal => {
-                const pct = goal.targetHours > 0 ? Math.min(100, Math.round((goal.achievedHours / goal.targetHours) * 100)) : 0
-                const statusColor = goal.status === 'completed' ? 'text-green-400' : goal.status === 'failed' ? 'text-red-400' : 'text-gray-400'
+                const pct = goal.targetHours > 0
+                  ? Math.min(100, Math.round((goal.achievedHours / goal.targetHours) * 100))
+                  : 0
+                const statusColor =
+                  goal.status === 'completed' ? 'text-green-400' :
+                  goal.status === 'failed' ? 'text-red-400' :
+                  'text-gray-400'
                 return (
                   <div key={goal.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="text-white font-medium">{goal.title}</p>
+                    <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                      <div className="min-w-0">
+                        <p className="text-white font-medium truncate">{goal.title}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{goal.achievedHours}h / {goal.targetHours}h</p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${PERIOD_COLORS[goal.period]}`}>{period}</span>
                         <span className={`text-xs capitalize ${statusColor}`}>{goal.status}</span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-800 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full transition-all ${goal.status === 'completed' ? 'bg-green-500' : goal.status === 'failed' ? 'bg-red-500' : 'bg-indigo-500'}`}
+                        className={`h-2 rounded-full transition-all ${
+                          goal.status === 'completed' ? 'bg-green-500' :
+                          goal.status === 'failed' ? 'bg-red-500' :
+                          'bg-indigo-500'
+                        }`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>

@@ -88,4 +88,66 @@ test.describe('Dashboard', () => {
     const hoursUsed = parseFloat(hoursUsedText ?? '0')
     expect(hoursUsed).toBeGreaterThanOrEqual(1)
   })
+
+  // ── Stat card values ──────────────────────────────────────────────────────
+
+  test('all stat card values are non-empty strings (not undefined/NaN)', async ({ page }) => {
+    const cards = page.locator('div.border-l-4')
+    const count = await cards.count()
+    expect(count).toBeGreaterThanOrEqual(7)
+    for (let i = 0; i < count; i++) {
+      const val = await cards.nth(i).locator('p.text-2xl').textContent()
+      expect(val?.trim()).not.toBe('')
+      expect(val).not.toMatch(/NaN|undefined/)
+    }
+  })
+
+  test('stat card left-border colors are correct', async ({ page }) => {
+    await expect(page.locator('div.border-indigo-500').first()).toBeVisible()
+    await expect(page.locator('div.border-green-500').first()).toBeVisible()
+    await expect(page.locator('div.border-blue-500').first()).toBeVisible()
+  })
+
+  test('progress bar is rendered and has non-negative width', async ({ page }) => {
+    const bar = page.locator('div.bg-indigo-600.h-3.rounded-full')
+    await expect(bar).toBeVisible()
+    const width = await bar.evaluate((el: HTMLElement) =>
+      parseFloat(el.style.width ?? '0')
+    )
+    expect(width).toBeGreaterThanOrEqual(0)
+    expect(width).toBeLessThanOrEqual(100)
+  })
+
+  test('time distribution shows legend OR no-data empty state', async ({ page }) => {
+    const legendOrEmpty = await page.locator('span.rounded-full').first().isVisible().catch(() => false)
+    const hasEmpty = await page.getByText('No data yet').isVisible().catch(() => false)
+    expect(legendOrEmpty || hasEmpty).toBe(true)
+  })
+
+  test('Water stat card shows "target: 4L" subtitle', async ({ page }) => {
+    const waterCard = page.locator('div.border-l-4').filter({ hasText: 'Water' })
+    await expect(waterCard.getByText('target: 4L')).toBeVisible()
+  })
+
+  test('Sleep stat card shows "target: 7.5h" subtitle', async ({ page }) => {
+    const sleepCard = page.locator('div.border-l-4').filter({ hasText: 'Sleep' })
+    await expect(sleepCard.getByText('target: 7.5h')).toBeVisible()
+  })
+
+  test('sidebar navigation links all lead to correct pages', async ({ page }) => {
+    const routes = [
+      { label: 'Timer', url: '/timer' },
+      { label: 'Tasks', url: '/tasks' },
+      { label: 'Goals', url: '/goals' },
+      { label: 'Reports', url: '/reports' },
+      { label: 'Calendar', url: '/calendar' },
+      { label: 'Settings', url: '/settings' },
+    ]
+    for (const { label, url } of routes) {
+      await page.getByRole('link', { name: label }).click()
+      await expect(page).toHaveURL(url)
+      await page.goBack()
+      await page.waitForURL('/')
+    }
+  })
 })

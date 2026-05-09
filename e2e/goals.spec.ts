@@ -108,7 +108,78 @@ test.describe('Goals', () => {
     const goalCard = page.locator('div.rounded-xl').filter({ hasText: 'Badge Test Goal' })
     await expect(goalCard.getByText('weekly')).toBeVisible()
     await expect(goalCard.getByText('active')).toBeVisible()
-    // Progress bar exists (0%)
     await expect(goalCard.getByText('0% complete')).toBeVisible()
+  })
+
+  // ── Additional coverage ───────────────────────────────────────────────────
+
+  test('period badge colors: weekly=blue, monthly=yellow, yearly=purple', async ({ page }) => {
+    const periods = [
+      { title: 'Blue Badge', period: 'weekly', cls: 'text-blue-400' },
+      { title: 'Yellow Badge', period: 'monthly', cls: 'text-yellow-400' },
+      { title: 'Purple Badge', period: 'yearly', cls: 'text-purple-400' },
+    ]
+    for (const { title, period, cls } of periods) {
+      await page.getByRole('button', { name: '+ New Goal' }).click()
+      await page.getByPlaceholder('Goal title').fill(title)
+      await page.locator('select').selectOption(period)
+      await page.getByPlaceholder('Target hours').fill('5')
+      const res = page.waitForResponse(
+        r => r.url().includes('/api/goals') && r.request().method() === 'POST' && r.status() === 201
+      )
+      await page.getByRole('button', { name: 'Create' }).click()
+      await res
+
+      const card = page.locator('div.rounded-xl').filter({ hasText: title })
+      const badge = card.locator(`span.${cls}`)
+      await expect(badge).toBeVisible()
+    }
+  })
+
+  test('goal progress bar element exists in each goal card', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Goal' }).click()
+    await page.getByPlaceholder('Goal title').fill('Progress Bar Goal')
+    await page.getByPlaceholder('Target hours').fill('20')
+    const res = page.waitForResponse(
+      r => r.url().includes('/api/goals') && r.request().method() === 'POST' && r.status() === 201
+    )
+    await page.getByRole('button', { name: 'Create' }).click()
+    await res
+
+    const card = page.locator('div.rounded-xl').filter({ hasText: 'Progress Bar Goal' })
+    // Progress percentage text is the most reliable indicator
+    await expect(card.getByText('0% complete')).toBeVisible()
+    // Achieved / target hours displayed
+    await expect(card.getByText('0h / 20h')).toBeVisible()
+  })
+
+  test('period select has all three options', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Goal' }).click()
+    const select = page.locator('select')
+    await expect(select.locator('option[value="weekly"]')).toBeAttached()
+    await expect(select.locator('option[value="monthly"]')).toBeAttached()
+    await expect(select.locator('option[value="yearly"]')).toBeAttached()
+  })
+
+  test('create form requires title (HTML5 validation blocks empty submit)', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Goal' }).click()
+    // Submit without filling title
+    await page.getByRole('button', { name: 'Create' }).click()
+    // Form remains visible
+    await expect(page.getByPlaceholder('Goal title')).toBeVisible()
+  })
+
+  test('achieved hours / target hours display on goal card', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Goal' }).click()
+    await page.getByPlaceholder('Goal title').fill('Hours Display Goal')
+    await page.getByPlaceholder('Target hours').fill('15')
+    const res = page.waitForResponse(
+      r => r.url().includes('/api/goals') && r.request().method() === 'POST' && r.status() === 201
+    )
+    await page.getByRole('button', { name: 'Create' }).click()
+    await res
+
+    const card = page.locator('div.rounded-xl').filter({ hasText: 'Hours Display Goal' })
+    await expect(card.getByText('0h / 15h')).toBeVisible()
   })
 })

@@ -40,7 +40,7 @@ export default function Reports() {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-white">Reports</h2>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard label="Weekly Work" value={`${weekly?.totalWorkHours.toFixed(1) ?? 0}h`} color="green" />
         <StatCard label="Weekly Study" value={`${weekly?.totalStudyHours.toFixed(1) ?? 0}h`} color="blue" />
         <StatCard label="Weekly Timer" value={`${weekly?.totalTimerHours.toFixed(1) ?? 0}h`} color="indigo" />

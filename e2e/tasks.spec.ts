@@ -170,4 +170,107 @@ test.describe('Tasks', () => {
     await page.getByRole('button', { name: 'Cancel' }).click()
     await expect(page.getByRole('heading', { name: 'Delete Task' })).not.toBeVisible()
   })
+
+  // ── Additional coverage ───────────────────────────────────────────────────
+
+  test('task row shows unit label next to input', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Task' }).click()
+    await page.getByPlaceholder('Title (e.g. Gym)').fill('Unit Label Test')
+    await page.getByPlaceholder('Target (e.g. 1)').fill('3')
+    await page.getByPlaceholder('Unit (e.g. hour, liters)').fill('pages')
+    const res = page.waitForResponse(
+      r => r.url().includes('/api/tasks') && r.request().method() === 'POST' && r.status() === 201
+    )
+    await page.getByRole('button', { name: 'Create' }).click()
+    await res
+
+    const taskRow = page.locator('div.rounded-xl').filter({ hasText: 'Unit Label Test' })
+    // Unit label appears next to the input (exact match avoids matching subtitle "Target: 3 pages")
+    await expect(taskRow.getByText('pages', { exact: true })).toBeVisible()
+  })
+
+  test('progress bar fills to 100% when all tasks are completed', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Task' }).click()
+    await page.getByPlaceholder('Title (e.g. Gym)').fill('Full Complete Task')
+    await page.getByPlaceholder('Target (e.g. 1)').fill('2')
+    await page.getByPlaceholder('Unit (e.g. hour, liters)').fill('km')
+    const createRes = page.waitForResponse(
+      r => r.url().includes('/api/tasks') && r.request().method() === 'POST' && r.status() === 201
+    )
+    await page.getByRole('button', { name: 'Create' }).click()
+    await createRes
+
+    const taskRow = page.locator('div.rounded-xl').filter({ hasText: 'Full Complete Task' })
+    const completeRes = page.waitForResponse(
+      r => r.url().includes('/complete') && r.status() === 200
+    )
+    await taskRow.locator('input[type="number"]').fill('2')
+    await taskRow.locator('input[type="number"]').press('Tab')
+    await completeRes
+
+    // Green border on the completed card
+    await expect(taskRow).toHaveClass(/border-green-800/, { timeout: 5000 })
+    // Green checkmark circle visible
+    await expect(taskRow.locator('.bg-green-500')).toBeVisible()
+  })
+
+  test('task target and unit visible in task row subtitle', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Task' }).click()
+    await page.getByPlaceholder('Title (e.g. Gym)').fill('Subtitle Check')
+    await page.getByPlaceholder('Target (e.g. 1)').fill('10')
+    await page.getByPlaceholder('Unit (e.g. hour, liters)').fill('minutes')
+    const res = page.waitForResponse(
+      r => r.url().includes('/api/tasks') && r.request().method() === 'POST' && r.status() === 201
+    )
+    await page.getByRole('button', { name: 'Create' }).click()
+    await res
+
+    await expect(page.getByText('Target: 10 minutes')).toBeVisible()
+  })
+
+  test('create form: all inputs are required (HTML5 validation)', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Task' }).click()
+    // Try submitting empty form — HTML5 required stops submission so form stays open
+    await page.getByRole('button', { name: 'Create' }).click()
+    await expect(page.getByPlaceholder('Title (e.g. Gym)')).toBeVisible()
+  })
+
+  test('multiple tasks can be created and all appear in list', async ({ page }) => {
+    const titles = ['Task Alpha', 'Task Beta', 'Task Gamma']
+    for (const title of titles) {
+      await page.getByRole('button', { name: '+ New Task' }).click()
+      await page.getByPlaceholder('Title (e.g. Gym)').fill(title)
+      await page.getByPlaceholder('Target (e.g. 1)').fill('1')
+      await page.getByPlaceholder('Unit (e.g. hour, liters)').fill('times')
+      const res = page.waitForResponse(
+        r => r.url().includes('/api/tasks') && r.request().method() === 'POST' && r.status() === 201
+      )
+      await page.getByRole('button', { name: 'Create' }).click()
+      await res
+    }
+    for (const title of titles) {
+      await expect(page.getByText(title)).toBeVisible()
+    }
+  })
+
+  test('delete modal cancel restores task in list', async ({ page }) => {
+    await page.getByRole('button', { name: '+ New Task' }).click()
+    await page.getByPlaceholder('Title (e.g. Gym)').fill('Cancel Delete Task')
+    await page.getByPlaceholder('Target (e.g. 1)').fill('1')
+    await page.getByPlaceholder('Unit (e.g. hour, liters)').fill('times')
+    const res = page.waitForResponse(
+      r => r.url().includes('/api/tasks') && r.request().method() === 'POST' && r.status() === 201
+    )
+    await page.getByRole('button', { name: 'Create' }).click()
+    await res
+
+    const taskRow = page.locator('div.rounded-xl').filter({ hasText: 'Cancel Delete Task' })
+    await taskRow.getByText('✕').click()
+    await expect(page.getByRole('heading', { name: 'Delete Task' })).toBeVisible()
+
+    // Use the modal's Cancel button specifically (the ✕ button aria-label contains "Cancel" too)
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Delete Task' })).not.toBeVisible()
+    await expect(page.getByText('Cancel Delete Task')).toBeVisible()
+  })
 })

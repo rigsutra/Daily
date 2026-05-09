@@ -28,13 +28,13 @@ export default function Timer() {
       <h2 className="text-2xl font-bold text-white">Timer</h2>
 
       {/* Main timer */}
-      <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800 text-center">
-        <div className="text-7xl font-mono font-bold text-white mb-6 tracking-tight">
+      <div className="bg-gray-900 rounded-2xl p-6 sm:p-8 border border-gray-800 text-center">
+        <div className="text-5xl sm:text-7xl font-mono font-bold text-white mb-6 tracking-tight">
           {fmt(elapsed)}
         </div>
 
         {!activeSession && (
-          <div className="flex justify-center gap-2 mb-6">
+          <div className="flex justify-center gap-2 mb-6 flex-wrap">
             {TIMER_TYPES.map(t => (
               <button
                 key={t}
@@ -49,7 +49,7 @@ export default function Timer() {
           </div>
         )}
 
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-center gap-3 flex-wrap">
           {!activeSession && (
             <button
               onClick={() => start(type)}
@@ -93,7 +93,7 @@ export default function Timer() {
       </div>
 
       {/* Countdown cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 text-center">
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Free Hours Today</p>
           <p className="text-4xl font-bold text-indigo-400">{yearData.productiveHoursPerDay.toFixed(1)}</p>

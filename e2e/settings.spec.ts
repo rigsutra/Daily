@@ -59,7 +59,48 @@ test.describe('Settings', () => {
   })
 
   test('Sidebar shows user name', async ({ page }) => {
-    // Sidebar shows the user's name
     await expect(page.getByText(userName)).toBeVisible()
+  })
+
+  // ── Additional coverage ───────────────────────────────────────────────────
+
+  test('Name field can be edited', async ({ page }) => {
+    const nameInput = page.locator('input').first()
+    await nameInput.clear()
+    await nameInput.fill('Updated Name')
+    await expect(nameInput).toHaveValue('Updated Name')
+  })
+
+  test('Mobile Sync API pre block contains userId', async ({ page }) => {
+    const preBlock = page.locator('pre')
+    await expect(preBlock).toBeVisible()
+    const content = await preBlock.textContent()
+    expect(content).toContain(`"userId": ${authUser.id}`)
+  })
+
+  test('Mobile Sync API code block shows POST endpoint', async ({ page }) => {
+    const codeEl = page.locator('code')
+    await expect(codeEl).toBeVisible()
+    const content = await codeEl.textContent()
+    expect(content).toContain('POST /api/mobile-usage/sync')
+  })
+
+  test('profile section has dark-themed card', async ({ page }) => {
+    const card = page.locator('div.bg-gray-900').filter({ hasText: 'Profile' })
+    await expect(card).toBeVisible()
+  })
+
+  test('Save Changes reverts label to "Save Changes" after 2 seconds', async ({ page }) => {
+    await page.getByRole('button', { name: 'Save Changes' }).click()
+    await expect(page.getByRole('button', { name: /Saved/ })).toBeVisible()
+    // After ~2s it should revert
+    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeVisible({ timeout: 4000 })
+  })
+
+  test('no horizontal scroll on settings page', async ({ page }) => {
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    )
+    expect(overflow).toBe(false)
   })
 })

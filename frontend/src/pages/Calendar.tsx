@@ -193,7 +193,7 @@ const Calendar: React.FC = () => {
           {loading ? (
             <div className="flex items-center justify-center py-12 text-gray-400">Loading…</div>
           ) : (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Completed */}
               <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
                 <h4 className="text-sm font-semibold text-green-400 uppercase tracking-wide mb-3 flex items-center gap-2">

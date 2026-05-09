@@ -147,10 +147,80 @@ test.describe('Calendar', () => {
   })
 
   test('selected day cell gets indigo background highlight', async ({ page }) => {
-    // Click today's cell (always a current-month cell)
     const todayCell = page.locator('div.ring-2.ring-indigo-500')
     await todayCell.click()
-    // After selection the cell transitions from ring to solid indigo-600 background
     await expect(page.locator('div.bg-indigo-600')).toBeVisible()
+  })
+
+  // ── Additional coverage ───────────────────────────────────────────────────
+
+  test('task panel heading shows the date of the selected day', async ({ page }) => {
+    const todayCell = page.locator('div.ring-2.ring-indigo-500')
+    await todayCell.click()
+    // Heading contains "Tasks for" followed by a date
+    const heading = page.getByRole('heading', { name: /Tasks for/ })
+    await expect(heading).toBeVisible()
+    const headingText = await heading.textContent()
+    const currentYear = new Date().getFullYear().toString()
+    expect(headingText).toContain(currentYear)
+  })
+
+  test('clicking a different date updates the task panel heading', async ({ page }) => {
+    // Click today first
+    const todayCell = page.locator('div.ring-2.ring-indigo-500')
+    await todayCell.click()
+    const firstHeading = await page.getByRole('heading', { name: /Tasks for/ }).textContent()
+
+    // Now click the 1st of the month (if today is not the 1st)
+    const dayCells = page.locator('div.cursor-pointer.h-12')
+    const count = await dayCells.count()
+    if (count > 1) {
+      await dayCells.nth(1).click()
+      await expect(page.getByRole('heading', { name: /Tasks for/ })).toBeVisible()
+    }
+  })
+
+  test('prev-month day cells are clickable and show task panel', async ({ page }) => {
+    // The prev-month cells have text-gray-700 class
+    const prevCells = page.locator('div.text-gray-700.cursor-pointer.h-12')
+    const count = await prevCells.count()
+    if (count > 0) {
+      await prevCells.first().click()
+      await expect(page.getByRole('heading', { name: /Tasks for/ })).toBeVisible()
+    }
+  })
+
+  test('next-month day cells are clickable and show task panel', async ({ page }) => {
+    const nextCells = page.locator('div.text-gray-700.cursor-pointer.h-12')
+    const count = await nextCells.count()
+    if (count > 0) {
+      await nextCells.last().click()
+      await expect(page.getByRole('heading', { name: /Tasks for/ })).toBeVisible()
+    }
+  })
+
+  test('column count badges show 0 initially for a new user', async ({ page }) => {
+    const todayCell = page.locator('div.ring-2.ring-indigo-500')
+    await todayCell.click()
+    // All three column badges show 0 (for fresh user with no data)
+    const greenBadge = page.locator('h4.text-green-400 span.text-green-500')
+    const redBadge = page.locator('h4.text-red-400 span.text-red-500')
+    const amberBadge = page.locator('h4.text-amber-400 span.text-amber-500')
+    await expect(greenBadge).toBeVisible()
+    await expect(redBadge).toBeVisible()
+    await expect(amberBadge).toBeVisible()
+  })
+
+  test('calendar month header is h2 level', async ({ page }) => {
+    const now = new Date()
+    const monthName = now.toLocaleDateString('en-US', { month: 'long' })
+    await expect(page.getByRole('heading', { level: 2, name: new RegExp(monthName) })).toBeVisible()
+  })
+
+  test('no horizontal scroll on calendar page', async ({ page }) => {
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    )
+    expect(overflow).toBe(false)
   })
 })

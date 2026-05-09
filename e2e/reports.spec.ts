@@ -51,4 +51,50 @@ test.describe('Reports', () => {
     const hasEmpty = await page.getByText('No monthly data yet').isVisible().catch(() => false)
     expect(hasChart > 0 || hasEmpty).toBe(true)
   })
+
+  // ── Additional coverage ───────────────────────────────────────────────────
+
+  test('all four stat card values contain a number followed by "h"', async ({ page }) => {
+    const labels = ['Weekly Work', 'Weekly Study', 'Weekly Timer', 'Monthly Avg/day']
+    for (const label of labels) {
+      const card = page.locator('div.border-l-4').filter({ hasText: label })
+      const val = await card.locator('p.text-2xl').textContent()
+      expect(val).toMatch(/[\d.]+h/)
+    }
+  })
+
+  test('stat card border colors are correct', async ({ page }) => {
+    await expect(page.locator('div.border-green-500').first()).toBeVisible()
+    await expect(page.locator('div.border-blue-500').first()).toBeVisible()
+    await expect(page.locator('div.border-indigo-500').first()).toBeVisible()
+    await expect(page.locator('div.border-purple-500').first()).toBeVisible()
+  })
+
+  test('reports page title is h2 with correct text', async ({ page }) => {
+    const heading = page.getByRole('heading', { level: 2, name: 'Reports' })
+    await expect(heading).toBeVisible()
+  })
+
+  test('Weekly Breakdown section has a chart container or empty text', async ({ page }) => {
+    const section = page.locator('div.rounded-xl').filter({ hasText: 'Weekly Breakdown' })
+    await expect(section).toBeVisible()
+    const hasChart = await section.locator('svg').isVisible().catch(() => false)
+    const hasEmpty = await section.getByText('No data this week yet').isVisible().catch(() => false)
+    expect(hasChart || hasEmpty).toBe(true)
+  })
+
+  test('Monthly chart section has a chart container or empty text', async ({ page }) => {
+    const section = page.locator('div.rounded-xl').filter({ hasText: 'Monthly Productive Hours' })
+    await expect(section).toBeVisible()
+    const hasChart = await section.locator('svg').isVisible().catch(() => false)
+    const hasEmpty = await section.getByText('No monthly data yet').isVisible().catch(() => false)
+    expect(hasChart || hasEmpty).toBe(true)
+  })
+
+  test('no horizontal scroll on reports page', async ({ page }) => {
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    )
+    expect(overflow).toBe(false)
+  })
 })

@@ -37,9 +37,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-2xl font-bold text-white">Daily Dashboard</h2>
-        <span className="text-sm text-gray-400">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+        <span className="text-sm text-gray-400">
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+        </span>
       </div>
 
       {/* 24h progress bar */}
@@ -61,7 +63,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stat cards — row 1 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard label="Productivity Score" value={`${daily?.productivityScore ?? 0}%`} color="indigo" />
         <StatCard label="Work Hours" value={`${daily?.workHours ?? 0}h`} color="green" />
         <StatCard label="Study Hours" value={`${daily?.studyHours ?? 0}h`} color="blue" />
@@ -74,7 +76,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stat cards — row 2 */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           label="Gym"
           value={daily?.gymCompleted ? '✓ Done' : '✗ Not Done'}
@@ -88,14 +90,28 @@ export default function Dashboard() {
       <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
         <h3 className="text-sm font-medium text-gray-300 mb-4">Today's Time Distribution</h3>
         {pieData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value.toFixed(1)}h`}>
-                {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-              </Pie>
-              <Tooltip formatter={(v) => typeof v === 'number' ? `${v.toFixed(1)}h` : v} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <>
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={75}>
+                  {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Pie>
+                <Tooltip
+                  formatter={(v) => typeof v === 'number' ? `${v.toFixed(1)}h` : v}
+                  contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Legend below chart — more readable on all screen sizes */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 justify-center">
+              {pieData.map((d, i) => (
+                <span key={d.name} className="flex items-center gap-1.5 text-xs text-gray-400">
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                  {d.name}: {d.value.toFixed(1)}h
+                </span>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="h-48 flex items-center justify-center text-gray-500 text-sm">No data yet — start tracking</div>
         )}
