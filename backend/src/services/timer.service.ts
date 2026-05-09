@@ -1,4 +1,5 @@
 import { timerRepository } from '../repositories/timer.repository.js'
+import { goalProgressService } from './goalProgress.service.js'
 
 export const timerService = {
   async start(userId: number, type: string) {
@@ -18,7 +19,22 @@ export const timerService = {
     const active = await timerRepository.findActiveByUser(userId)
     if (!active) throw new Error('No active timer')
     const duration = Math.floor((Date.now() - active.startTime.getTime()) / 60000)
-    return timerRepository.update(active.id, { endTime: new Date(), duration })
+    const updatedSession = await timerRepository.update(active.id, { endTime: new Date(), duration })
+    
+    // Update goal progress when timer is stopped
+    if (active.type === 'work') {
+      try {
+        await goalProgressService.updateGoalsFromTimerSessions(
+          userId,
+          new Date(active.startTime),
+          new Date()
+        )
+      } catch (error) {
+        console.error('Error updating goals from timer session:', error)
+      }
+    }
+    
+    return updatedSession
   },
 
   getActive: (userId: number) => timerRepository.findActiveByUser(userId),

@@ -1,4 +1,5 @@
 import { taskRepository } from '../repositories/task.repository.js'
+import { goalProgressService } from './goalProgress.service.js'
 
 export const taskService = {
   getTasks: (userId: number) => taskRepository.findAllByUser(userId),
@@ -26,7 +27,21 @@ export const taskService = {
   async logCompletion(taskId: number, achieved: number) {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    return taskRepository.upsertCompletion(taskId, today, achieved)
+    
+    const completion = await taskRepository.upsertCompletion(taskId, today, achieved)
+    
+    // Update goal progress when task completion is logged
+    try {
+      await goalProgressService.updateGoalsFromTaskCompletions(
+        completion.task.userId,
+        today,
+        new Date()
+      )
+    } catch (error) {
+      console.error('Error updating goals from task completion:', error)
+    }
+    
+    return completion
   },
 
   getTodayCompletions: (userId: number) => {

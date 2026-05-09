@@ -1,4 +1,4 @@
-module.exports = {
+odule.exports = {
   apps: [
     {
       name: 'daily-backend',
@@ -9,6 +9,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
+        JWT_SECRET: 'change-this-to-a-secure-random-string-in-production',
+        DATABASE_URL: 'file:./dev.db',
       },
       error_file: '/root/logs/daily-backend-error.log',
       out_file: '/root/logs/daily-backend-out.log',

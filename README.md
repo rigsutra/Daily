@@ -1,80 +1,191 @@
 # Daily — Personal Productivity Tracker
 
-A full-stack web app to track daily habits, work/study time, tasks, goals, and mobile screen usage.
+A full‑stack TypeScript web application for tracking daily habits, work/study time, tasks, goals, and mobile screen usage.
 
-**Live:** https://daily.ashishserver.space
+**Live demo:** https://daily.ashishserver.space
+
+---
+
+## Table of Contents
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Repository Structure](#repository-structure)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Available Scripts](#available-scripts)
+- [API Documentation](#api-documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
 ## Features
 
 ### Dashboard
-- **24-hour progress bar** — shows how much of the day has been used vs. remaining.
-- **Productivity score** — calculated daily score based on tracked habits.
-- **Stat cards** — quick-glance view of work hours, study hours, mobile usage, gym status, water intake, sleep, and task completion count.
-- **Time distribution pie chart** — breakdown of the day across work, study, mobile, sleep, and free time.
-- **Top apps bar chart** — horizontal bar chart of the most-used mobile apps today.
+- 24‑hour progress bar showing used vs. remaining time.
+- Productivity score calculated from tracked habits.
+- Stat cards for work hours, study hours, mobile usage, gym, water, sleep, and task completion.
+- Time‑distribution pie chart.
+- Top‑apps horizontal bar chart.
 
 ### Tasks (Task Board)
-- **Recurring daily tasks** — create tasks with a title, numeric target, unit (e.g. "1 hour", "4 liters"), and optional mandatory flag.
-- **Daily completion logging** — enter achieved value per task; task auto-marks as complete when target is met.
-- **Today's progress bar** — shows X/Y tasks done as a percentage.
-- **Friction-protected deletion** — deleting a task requires typing a 1000-character justification reason, stored in the DB as a `DeleteRequest`.
+- Recurring daily tasks with numeric targets and optional mandatory flag.
+- Daily completion logging; tasks auto‑complete when target reached.
+- Progress bar for today’s tasks.
+- Friction‑protected deletion (1000‑character justification stored as a `DeleteRequest`).
 
 ### Timer
-- **Session types** — start a `work`, `study`, or `break` timer session.
-- **Pause / Resume / Stop** — full session lifecycle control; paused state is persisted server-side.
-- **Live elapsed display** — `HH:MM:SS` counter that syncs with server state on load.
-- **Year countdown cards** — shows productive hours available today, days/free-hours left in the current month, and days/free-hours left in the year.
+- Session types: `work`, `study`, `break`.
+- Pause / resume / stop controls with server‑side persistence.
+- Live elapsed display synced with server state.
+- Year‑countdown cards showing productive hours left for today, month, and year.
 
 ### Goals
-- **Weekly / Monthly / Yearly goals** — create goals with a title, period, and target hours.
-- **Progress tracking** — progress bar and percentage per goal, updated manually or via the API.
-- **Automatic status resolution** — a nightly cron job marks expired goals as `completed` or `failed` based on achieved vs. target hours.
+- Weekly / Monthly / Yearly goals with target hours.
+- Manual or API‑driven progress updates.
+- Nightly cron job marks expired goals as **completed** or **failed**.
 
 ### Reports
-- **Weekly summary cards** — total work hours, study hours, timer hours, and monthly average productive hours per day.
-- **Weekly bar chart** — per-day breakdown of work and study hours across the current week.
-- **Monthly line chart** — productive hours per day over the current month.
+- Weekly summary cards (work, study, timer, monthly average).
+- Weekly bar chart of daily work & study hours.
+- Monthly line chart of productive hours per day.
 
 ### Mobile Usage Sync
-- **App usage ingestion** — POST endpoint (`/api/mobile-usage/sync`) accepts screen time data (app name, minutes used, category) sent from a phone automation (no auth required).
-- **Today's usage view** — `/api/mobile-usage/today` returns today's per-app usage and total minutes.
-- **Settings page** — shows the exact payload format and user ID for setting up the sync on a mobile device.
+- Unauthenticated POST endpoint (`/api/mobile-usage/sync`) to ingest screen‑time data from a phone.
+- `/api/mobile-usage/today` returns today’s per‑app usage and total minutes.
+- Settings page displays payload format and user‑ID for mobile automation.
 
 ### Auth
-- **Register / Login** — JWT-based authentication with bcrypt password hashing.
-- **Protected routes** — all pages except Login and Register require a valid token.
-- **Profile** — view current user profile via `/api/auth/profile`.
+- Register / login with JWT and bcrypt hashed passwords.
+- Protected routes require `Bearer <token>` (except login, register, health, and mobile‑usage endpoints).
+- Profile endpoint (`/api/auth/profile`).
 
 ### API & Docs
-- **Swagger UI** — interactive API documentation at `/api-docs`.
-- **Health endpoint** — `GET /api/health` returns `{ status: "ok" }`.
+- Swagger UI at `/api-docs`.
+- Health check endpoint (`GET /api/health` returns `{ "status": "ok" }`).
 
 ---
 
 ## Tech Stack
 
-| | |
+| Layer | Tech |
 |---|---|
-| Backend | Node.js, Express 5, TypeScript, Prisma 7, SQLite (better-sqlite3), JWT, Swagger |
-| Frontend | React 19, Vite 6, TypeScript, Tailwind CSS 4, Zustand, Recharts, React Router 7 |
-| Deployment | PM2, served at `ashishserver.space` |
+| **Backend** | Node.js, Express 5, TypeScript, Prisma 7, SQLite (via `better-sqlite3`), JWT, Swagger |
+| **Frontend** | React 19, Vite 6, TypeScript, Tailwind CSS 4, Zustand, Recharts, React Router 7 |
+| **Deployment** | PM2, served at `ashishserver.space` |
+
+---
+
+## Repository Structure
+```
+Daily/
+├─ backend/
+│  ├─ src/
+│  │  ├─ controllers/   # Request handlers per domain
+│  │  ├─ routes/        # Express routers per domain
+│  │  ├─ services/      # Business logic
+│  │  ├─ repositories/  # Prisma queries
+│  │  ├─ middleware/    # auth.ts (JWT authentication)
+│  │  ├─ db.ts          # Prisma client singleton
+│  │  ├─ swagger.ts     # Swagger spec config
+│  │  └─ index.ts       # App entry point + cron jobs
+│  └─ prisma/schema.prisma
+├─ frontend/
+│  └─ src/
+│     ├─ pages/          # Route‑level components
+│     ├─ components/     # Shared UI (StatCard, Sidebar, Layout)
+│     ├─ store/          # Zustand stores (auth, timer)
+│     ├─ api/            # Axios clients (auth, dashboard, …)
+│     ├─ types/          # Shared TypeScript types
+│     └─ utils/          # Helpers (e.g., yearCalc)
+└─ ecosystem.config.cjs  # PM2 configuration
+```
 
 ---
 
 ## Getting Started
 
+### Prerequisites
+- Node.js ≥ 20
+- npm ≥ 10
+- Git
+
+### Backend
 ```bash
-# Backend
 cd backend
 npm install
-npm run dev        # starts on port 3001
-
-# Frontend
-cd frontend
-npm install
-npm run dev        # starts on port 5173
+# Create a .env file (see below) – PORT defaults to 3001 in production
+npm run dev        # starts the API on http://localhost:3001
 ```
 
-Set `PORT` in a `.env` file in `backend/` if needed (defaults to `3000` in dev, `3001` in PM2).
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev        # Vite dev server on http://localhost:5173
+```
+
+Both services use **npm workspaces**, so you can also run them from the root:
+```bash
+npm run dev:backend   # backend only
+npm run dev:frontend  # frontend only
+npm run dev           # start both concurrently (via your terminal multiplexer)
+```
+
+---
+
+## Environment Variables
+Create a `.env` file inside the `backend/` directory. The most common variables are:
+```
+# Server
+PORT=3001               # Port for the Express server (default 3001 in production)
+JWT_SECRET=your_secret  # Secret for signing JWTs (required)
+TOKEN_EXPIRES_IN=7d      # JWT expiration, e.g., "7d"
+
+# Prisma/SQLite
+DATABASE_URL=file:./dev.db   # SQLite file path (relative to backend/)
+```
+You can add additional variables as needed (e.g., for email services).
+
+---
+
+## Available Scripts
+From the repository root:
+| Script | Description |
+|---|---|
+| `npm run dev:backend` | Starts the backend in watch mode (tsx). |
+| `npm run dev:frontend` | Starts the Vite dev server. |
+| `npm run build` | Builds both backend (tsc) and frontend (vite). |
+| `npm run build:backend` | Compiles backend TypeScript to `backend/dist/`. |
+| `npm run build:frontend` | Compiles frontend and outputs to `frontend/dist/`. |
+| `npm run start:backend` | Runs the compiled backend (`node backend/dist/index.js`). |
+
+---
+
+## API Documentation
+Once the backend is running, visit **`http://localhost:3001/api-docs`** to explore the OpenAPI (Swagger) interface. All protected endpoints expect the `Authorization: Bearer <JWT>` header.
+
+Key route groups (see the Swagger UI for full details):
+- **Auth** – `/api/auth/*` (register, login, profile).
+- **Timer** – `/api/timer/*` (start, pause, resume, stop, get sessions).
+- **Tasks** – `/api/tasks/*` (CRUD, completions).
+- **Goals** – `/api/goals/*` (CRUD, progress).
+- **Mobile Usage** – `/api/mobile-usage/sync` (unauthenticated POST), `/api/mobile-usage/today` (GET).
+- **Health** – `/api/health`.
+
+---
+
+## Contributing
+Contributions are welcome! Please follow these steps:
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feat/awesome-feature`).
+3. Ensure the code compiles (`npm run build`).
+4. Write or update tests where applicable.
+5. Submit a pull request with a clear description of the change.
+
+All code should adhere to the existing coding style (Prettier + ESLint configuration provided in each workspace).
+
+---
+
+## License
+This project is licensed under the MIT License – see the `LICENSE` file for details.

@@ -25,4 +25,27 @@ export const goalController = {
       res.status(400).json({ error: e.message })
     }
   },
+
+  async getGoalDetails(req: AuthRequest, res: Response) {
+    try {
+      const goal = await goalService.getGoalDetails(req.userId!, Number(req.params.id))
+      res.json(goal)
+    } catch (e: any) {
+      res.status(500).json({ error: e.message })
+    }
+  },
+
+  async getGoalProgress(req: AuthRequest, res: Response) {
+    const goals = await goalService.getGoalProgress(req.userId!)
+    res.json(goals)
+  },
+
+  async autoUpdateGoals(req: AuthRequest, res: Response) {
+    try {
+      const result = await goalService.autoUpdateGoals(req.userId!)
+      res.json(result)
+    } catch (e: any) {
+      res.status(500).json({ error: e.message })
+    }
+  },
 }

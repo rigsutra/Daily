@@ -1,9 +1,9 @@
-import { Router } from 'express'
-import { mobileUsageController } from '../controllers/mobileUsage.controller.js'
-import { authenticate } from '../middleware/auth.js'
+// import { Router } from 'express'
+// import { mobileUsageController } from '../controllers/mobileUsage.controller.js'
+// import { authenticate } from '../middleware/auth.js'
 
-const router = Router()
+// const router = Router()
 
-router.get('/today', mobileUsageController.getToday)
+// router.get('/today', mobileUsageController.getToday)
 
-export default router
+// export default router

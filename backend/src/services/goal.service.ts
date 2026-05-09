@@ -1,4 +1,6 @@
 import { goalRepository } from '../repositories/goal.repository.js'
+import { prisma } from '../db.js'
+import { goalProgressService } from './goalProgress.service.js'
 
 function getPeriodDates(period: string): { startDate: Date; endDate: Date } {
   const now = new Date()
@@ -32,4 +34,26 @@ export const goalService = {
 
   updateProgress: (goalId: number, achievedHours: number) =>
     goalRepository.update(goalId, { achievedHours }),
+
+  getGoalDetails: (userId: number, goalId: number) => {
+    return goalProgressService.getGoalProgress(userId, goalId)
+  },
+
+  // Get user goals with progress information
+  getGoalProgress: (userId: number) => {
+    return prisma.goal.findMany({
+      where: { userId },
+      include: {
+        _count: {
+          select: { taskCompletions: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+  },
+
+  // Auto-update all goals based on recent activity
+  autoUpdateGoals: (userId: number) => {
+    return goalProgressService.updateAllGoalsProgress(userId)
+  }
 }
