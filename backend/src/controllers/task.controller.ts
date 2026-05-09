@@ -40,4 +40,27 @@ export const taskController = {
     const completions = await taskService.getTodayCompletions(req.userId!)
     res.json(completions)
   },
+
+  async getCompletionsForDate(req: AuthRequest, res: Response) {
+    try {
+      const { date } = req.query
+      if (!date) {
+        res.status(400).json({ error: 'Date parameter is required' })
+        return
+      }
+      
+      // Parse as local date (not UTC) to match how completions are stored
+      const parts = (date as string).split('-').map(Number)
+      if (parts.length !== 3 || parts.some(isNaN)) {
+        res.status(400).json({ error: 'Invalid date format' })
+        return
+      }
+      const parsedDate = new Date(parts[0], parts[1] - 1, parts[2])
+      
+      const completions = await taskService.getCompletionsForDate(req.userId!, parsedDate)
+      res.json(completions)
+    } catch (e: any) {
+      res.status(400).json({ error: e.message })
+    }
+  },
 }

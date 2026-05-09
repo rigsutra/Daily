@@ -9,6 +9,7 @@ import Tasks from './pages/Tasks'
 import Goals from './pages/Goals'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
+import Calendar from './pages/Calendar'
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/calendar" element={<Calendar />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

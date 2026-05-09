@@ -9,4 +9,6 @@ export const tasksApi = {
   complete: (id: number, achieved: number) =>
     api.post(`/tasks/${id}/complete`, { achieved }).then(r => r.data),
   todayCompletions: () => api.get('/tasks/completions/today').then(r => r.data),
+  completionsByDate: (date: string) =>
+    api.get(`/tasks/completions/date?date=${date}`).then(r => r.data),
 }

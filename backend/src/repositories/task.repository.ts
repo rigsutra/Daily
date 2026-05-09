@@ -24,14 +24,19 @@ export const taskRepository = {
       create: { taskId, date, achieved, completed: achieved > 0 },
     }),
 
-  getCompletionsForDate: (userId: number, date: Date) =>
-    prisma.taskCompletion.findMany({
+  getCompletionsForDate: (userId: number, date: Date) => {
+    const start = new Date(date)
+    start.setHours(0, 0, 0, 0)
+    const end = new Date(date)
+    end.setHours(23, 59, 59, 999)
+    return prisma.taskCompletion.findMany({
       where: {
         task: { userId },
-        date,
+        date: { gte: start, lte: end },
       },
       include: { task: true },
-    }),
+    })
+  },
 
   createDeleteRequest: (data: { userId: number; taskId: number; reason: string }) =>
     prisma.deleteRequest.create({ data }),

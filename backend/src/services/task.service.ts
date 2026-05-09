@@ -62,4 +62,8 @@ export const taskService = {
     today.setHours(0, 0, 0, 0)
     return taskRepository.getCompletionsForDate(userId, today)
   },
+
+  getCompletionsForDate: (userId: number, date: Date) => {
+    return taskRepository.getCompletionsForDate(userId, date)
+  },
 }

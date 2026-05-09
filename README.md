@@ -50,6 +50,13 @@ A full‑stack TypeScript web application for tracking daily habits, work/study 
 - Weekly bar chart of daily work & study hours.
 - Monthly line chart of productive hours per day.
 
+### Calendar
+- Monthly calendar view to navigate through dates.
+- Clicking on a date shows a Kanban view of tasks for that day, divided into:
+  - Completed tasks
+  - Not completed tasks
+  - Mandatory tasks (with completion status)
+
 ### Mobile Usage Sync
 - Unauthenticated POST endpoint (`/api/mobile-usage/sync`) to ingest screen‑time data from a phone.
 - `/api/mobile-usage/today` returns today’s per‑app usage and total minutes.
@@ -93,7 +100,7 @@ Daily/
 │       └── schema.prisma  # Data models
 ├── frontend/
 │   └── src/
-│       ├── pages/         # Route-level components
+│       ├── pages/         # Route-level components (Dashboard, Tasks, Timer, Goals, Reports, Settings, Calendar)
 │       ├── components/    # Shared UI (StatCard, Sidebar, Layout)
 │       ├── store/         # Zustand stores (auth, timer)
 │       ├── api/           # Axios API clients (one per domain)

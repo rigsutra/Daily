@@ -7,6 +7,7 @@ const links = [
   { to: '/tasks', label: 'Tasks', icon: '✓' },
   { to: '/goals', label: 'Goals', icon: '◎' },
   { to: '/reports', label: 'Reports', icon: '▦' },
+  { to: '/calendar', label: 'Calendar', icon: '📅' },
   { to: '/settings', label: 'Settings', icon: '⚙' },
 ]
 

@@ -21,6 +21,7 @@ export interface TaskCompletion {
   date: string
   achieved: number
   completed: boolean
+  createdAt: string
   task: Task
 }
 
