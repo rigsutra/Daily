@@ -7,6 +7,7 @@ const router = Router()
 router.use(authenticate)
 
 router.get('/daily', dashboardController.daily)
+router.patch('/daily', dashboardController.updateDaily)
 router.get('/weekly', dashboardController.weekly)
 router.get('/monthly', dashboardController.monthly)
 router.get('/yearly', dashboardController.yearly)

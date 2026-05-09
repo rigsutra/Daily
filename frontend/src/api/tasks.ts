@@ -11,4 +11,6 @@ export const tasksApi = {
   todayCompletions: () => api.get('/tasks/completions/today').then(r => r.data),
   completionsByDate: (date: string) =>
     api.get(`/tasks/completions/date?date=${date}`).then(r => r.data),
+  removedByDate: (date: string) =>
+    api.get(`/tasks/removed?date=${date}`).then(r => r.data),
 }

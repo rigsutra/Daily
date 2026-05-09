@@ -28,7 +28,8 @@ export const dashboardService = {
 
     const timerMinutes = timerSessions.reduce((sum, s) => sum + s.duration, 0)
     const completedTasks = taskCompletions.filter(c => c.completed).length
-    const totalTasks = taskCompletions.length
+    const allUserTasks = await prisma.task.findMany({ where: { userId }, select: { id: true } })
+    const totalTasks = allUserTasks.length
     const productivityScore = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
     // const totalMobileMinutes = mobileUsage.reduce((sum, m) => sum + m.minutesUsed, 0)
 
@@ -101,10 +102,11 @@ export const dashboardService = {
       orderBy: { createdAt: 'desc' }
     })
 
-    const totalProductiveHours = entries.reduce((s, e) => s + e.productiveHours, 0)
     const totalWorkHours = entries.reduce((s, e) => s + e.workHours, 0)
     const totalStudyHours = entries.reduce((s, e) => s + e.studyHours, 0)
     const totalTimerMinutes = sessions.reduce((s, ss) => s + ss.duration, 0)
+    const totalTimerHours = Math.round((totalTimerMinutes / 60) * 10) / 10
+    const totalProductiveHours = Math.round((totalWorkHours + totalStudyHours + totalTimerHours) * 10) / 10
     const completedCount = completions.filter(c => c.completed).length
 
     return {
@@ -114,7 +116,7 @@ export const dashboardService = {
       totalProductiveHours,
       totalWorkHours,
       totalStudyHours,
-      totalTimerHours: Math.round((totalTimerMinutes / 60) * 10) / 10,
+      totalTimerHours,
       completedTasks: completedCount,
       totalTasks: completions.length,
       weeklyGoals: weeklyGoals.map(goal => ({
@@ -136,6 +138,7 @@ export const dashboardService = {
 
     const entries = await dashboardRepository.getEntriesInRange(userId, start, end)
     const completions = await dashboardRepository.getTaskCompletions(userId, start, end)
+    const monthlySessions = await dashboardRepository.getTimerSessions(userId, start, end)
     const monthlyGoals = await prisma.goal.findMany({
       where: {
         userId,
@@ -148,8 +151,11 @@ export const dashboardService = {
       orderBy: { createdAt: 'desc' }
     })
 
+    const monthlyWorkHours = entries.reduce((s, e) => s + e.workHours, 0)
+    const monthlyStudyHours = entries.reduce((s, e) => s + e.studyHours, 0)
+    const monthlyTimerHours = monthlySessions.reduce((s, ss) => s + ss.duration, 0) / 60
     const avgProductiveHours = entries.length
-      ? entries.reduce((s, e) => s + e.productiveHours, 0) / entries.length
+      ? (monthlyWorkHours + monthlyStudyHours + monthlyTimerHours) / entries.length
       : 0
 
     return {
@@ -169,6 +175,18 @@ export const dashboardService = {
         status: goal.status
       }))
     }
+  },
+
+  async updateDaily(userId: number, data: {
+    workHours?: number
+    studyHours?: number
+    gymCompleted?: boolean
+    waterLiters?: number
+    sleepHours?: number
+  }) {
+    const today = startOf(new Date())
+    const productiveHours = (data.workHours ?? 0) + (data.studyHours ?? 0)
+    return dashboardRepository.upsertDailyEntry(userId, today, { ...data, productiveHours })
   },
 
   getYearly: (_userId: number) => calculateAvailableYearTime(),

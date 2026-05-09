@@ -48,9 +48,8 @@ model Task {
   mandatory Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user           User             @relation(fields: [userId], references: [id])
-  completions    TaskCompletion[]
-  deleteRequests DeleteRequest[]
+  user        User             @relation(fields: [userId], references: [id])
+  completions TaskCompletion[]
 }
 
 model TaskCompletion {
@@ -100,11 +99,11 @@ model DeleteRequest {
   id        Int      @id @default(autoincrement())
   userId    Int
   taskId    Int
+  taskTitle String
   reason    String
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
-  task Task @relation(fields: [taskId], references: [id])
 }
 
 model YearCalculation {

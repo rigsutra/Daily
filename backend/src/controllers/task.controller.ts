@@ -41,6 +41,26 @@ export const taskController = {
     res.json(completions)
   },
 
+  async getRemovedForDate(req: AuthRequest, res: Response) {
+    try {
+      const { date } = req.query
+      if (!date) {
+        res.status(400).json({ error: 'Date parameter is required' })
+        return
+      }
+      const parts = (date as string).split('-').map(Number)
+      if (parts.length !== 3 || parts.some(isNaN)) {
+        res.status(400).json({ error: 'Invalid date format' })
+        return
+      }
+      const parsedDate = new Date(parts[0], parts[1] - 1, parts[2])
+      const removed = await taskService.getRemovedForDate(req.userId!, parsedDate)
+      res.json(removed)
+    } catch (e: any) {
+      res.status(400).json({ error: e.message })
+    }
+  },
+
   async getCompletionsForDate(req: AuthRequest, res: Response) {
     try {
       const { date } = req.query

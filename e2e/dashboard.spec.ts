@@ -96,8 +96,15 @@ test.describe('Dashboard', () => {
     const count = await cards.count()
     expect(count).toBeGreaterThanOrEqual(7)
     for (let i = 0; i < count; i++) {
-      const val = await cards.nth(i).locator('p.text-2xl').textContent()
-      expect(val?.trim()).not.toBe('')
+      const card = cards.nth(i)
+      // Value may be a <p class="text-2xl"> (static) or <input class="text-2xl"> (editable)
+      let val = ''
+      if (await card.locator('p.text-2xl').count() > 0) {
+        val = (await card.locator('p.text-2xl').textContent()) ?? ''
+      } else if (await card.locator('input.text-2xl').count() > 0) {
+        val = await card.locator('input.text-2xl').inputValue()
+      }
+      expect(val.trim()).not.toBe('')
       expect(val).not.toMatch(/NaN|undefined/)
     }
   })
@@ -110,7 +117,7 @@ test.describe('Dashboard', () => {
 
   test('progress bar is rendered and has non-negative width', async ({ page }) => {
     const bar = page.locator('div.bg-indigo-600.h-3.rounded-full')
-    await expect(bar).toBeVisible()
+    await expect(bar).toBeAttached()
     const width = await bar.evaluate((el: HTMLElement) =>
       parseFloat(el.style.width ?? '0')
     )

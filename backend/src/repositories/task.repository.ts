@@ -13,8 +13,7 @@ export const taskRepository = {
   delete: (id: number) =>
     prisma.$transaction([
       prisma.taskCompletion.deleteMany({ where: { taskId: id } }),
-      prisma.deleteRequest.deleteMany({ where: { taskId: id } }),
-      prisma.task.delete({ where: { id } })
+      prisma.task.delete({ where: { id } }),
     ]),
 
   upsertCompletion: (taskId: number, date: Date, achieved: number) =>
@@ -38,9 +37,20 @@ export const taskRepository = {
     })
   },
 
-  createDeleteRequest: (data: { userId: number; taskId: number; reason: string }) =>
+  createDeleteRequest: (data: { userId: number; taskId: number; taskTitle: string; reason: string }) =>
     prisma.deleteRequest.create({ data }),
 
   getDeleteRequest: (taskId: number) =>
     prisma.deleteRequest.findFirst({ where: { taskId } }),
+
+  getDeleteRequestsForDate: (userId: number, date: Date) => {
+    const start = new Date(date)
+    start.setHours(0, 0, 0, 0)
+    const end = new Date(date)
+    end.setHours(23, 59, 59, 999)
+    return prisma.deleteRequest.findMany({
+      where: { userId, createdAt: { gte: start, lte: end } },
+      orderBy: { createdAt: 'asc' },
+    })
+  },
 }

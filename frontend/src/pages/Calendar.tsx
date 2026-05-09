@@ -12,12 +12,21 @@ type TaskCompletionWithTask = {
   task: Task;
 };
 
+type RemovedTask = {
+  id: number;
+  taskId: number;
+  taskTitle: string;
+  reason: string;
+  createdAt: string;
+};
+
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [tasksForDate, setTasksForDate] = useState<TaskCompletionWithTask[]>([]);
+  const [removedForDate, setRemovedForDate] = useState<RemovedTask[]>([]);
   const [loading, setLoading] = useState(false);
 
   const formatDate = (date: Date) => {
@@ -38,10 +47,15 @@ const Calendar: React.FC = () => {
   const fetchTasksForDate = async (date: Date) => {
     setLoading(true);
     try {
-      const completions = await tasksApi.completionsByDate(formatDate(date));
+      const [completions, removed] = await Promise.all([
+        tasksApi.completionsByDate(formatDate(date)),
+        tasksApi.removedByDate(formatDate(date)),
+      ]);
       setTasksForDate(completions);
+      setRemovedForDate(removed);
     } catch {
       setTasksForDate([]);
+      setRemovedForDate([]);
     } finally {
       setLoading(false);
     }
@@ -57,18 +71,21 @@ const Calendar: React.FC = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
     setSelectedDate(null);
     setTasksForDate([]);
+    setRemovedForDate([]);
   };
 
   const goToNextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
     setSelectedDate(null);
     setTasksForDate([]);
+    setRemovedForDate([]);
   };
 
   const goToToday = () => {
     setCurrentDate(new Date());
     setSelectedDate(null);
     setTasksForDate([]);
+    setRemovedForDate([]);
   };
 
   const isToday = (day: number) =>
@@ -267,6 +284,25 @@ const Calendar: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              {/* Removed — only shown when tasks were deleted on this day */}
+              {removedForDate.length > 0 && (
+                <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
+                  <h4 className="text-sm font-semibold text-amber-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+                    Removed Tasks
+                    <span className="ml-auto text-amber-500 font-bold">{removedForDate.length}</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {removedForDate.map(r => (
+                      <div key={r.id} className="p-2 bg-amber-900/20 border border-amber-900/40 rounded-lg">
+                        <p className="text-sm font-medium text-gray-100">{r.taskTitle}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{r.reason}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

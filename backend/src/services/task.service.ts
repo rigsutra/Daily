@@ -29,7 +29,7 @@ export const taskService = {
       }
     }
     
-    await taskRepository.createDeleteRequest({ userId, taskId, reason })
+    await taskRepository.createDeleteRequest({ userId, taskId, taskTitle: task.title, reason })
     await taskRepository.delete(taskId)
     return { message: 'Task deleted' }
   },
@@ -63,7 +63,9 @@ export const taskService = {
     return taskRepository.getCompletionsForDate(userId, today)
   },
 
-  getCompletionsForDate: (userId: number, date: Date) => {
-    return taskRepository.getCompletionsForDate(userId, date)
-  },
+  getCompletionsForDate: (userId: number, date: Date) =>
+    taskRepository.getCompletionsForDate(userId, date),
+
+  getRemovedForDate: (userId: number, date: Date) =>
+    taskRepository.getDeleteRequestsForDate(userId, date),
 }

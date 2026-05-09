@@ -38,4 +38,20 @@ export const dashboardController = {
       res.status(500).json({ error: e.message })
     }
   },
+
+  async updateDaily(req: AuthRequest, res: Response) {
+    try {
+      const { workHours, studyHours, gymCompleted, waterLiters, sleepHours } = req.body
+      const entry = await dashboardService.updateDaily(req.userId!, {
+        workHours: workHours !== undefined ? Number(workHours) : undefined,
+        studyHours: studyHours !== undefined ? Number(studyHours) : undefined,
+        gymCompleted: gymCompleted !== undefined ? Boolean(gymCompleted) : undefined,
+        waterLiters: waterLiters !== undefined ? Number(waterLiters) : undefined,
+        sleepHours: sleepHours !== undefined ? Number(sleepHours) : undefined,
+      })
+      res.json(entry)
+    } catch (e: any) {
+      res.status(500).json({ error: e.message })
+    }
+  },
 }
