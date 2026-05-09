@@ -96,12 +96,7 @@ export const goalProgressService = {
   // Get goal progress with detailed information
   async getGoalProgress(userId: number, goalId: number) {
     const goal = await prisma.goal.findUnique({
-      where: { id: goalId },
-      include: {
-        _count: {
-          select: { taskCompletions: true }
-        }
-      }
+      where: { id: goalId }
     })
 
     if (!goal || goal.userId !== userId) {

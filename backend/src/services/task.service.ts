@@ -30,15 +30,18 @@ export const taskService = {
     
     const completion = await taskRepository.upsertCompletion(taskId, today, achieved)
     
-    // Update goal progress when task completion is logged
-    try {
-      await goalProgressService.updateGoalsFromTaskCompletions(
-        completion.task.userId,
-        today,
-        new Date()
-      )
-    } catch (error) {
-      console.error('Error updating goals from task completion:', error)
+    // Get task to get userId for goal progress update
+    const task = await taskRepository.findById(taskId)
+    if (task) {
+      try {
+        await goalProgressService.updateGoalsFromTaskCompletions(
+          task.userId,
+          today,
+          new Date()
+        )
+      } catch (error) {
+        console.error('Error updating goals from task completion:', error)
+      }
     }
     
     return completion

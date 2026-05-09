@@ -43,11 +43,6 @@ export const goalService = {
   getGoalProgress: (userId: number) => {
     return prisma.goal.findMany({
       where: { userId },
-      include: {
-        _count: {
-          select: { taskCompletions: true }
-        }
-      },
       orderBy: { createdAt: 'desc' }
     })
   },

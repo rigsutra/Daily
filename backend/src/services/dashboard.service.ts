@@ -37,7 +37,15 @@ export const dashboardService = {
     const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5
     const totalHours = isWeekday ? 24 - 18.5 : 24 // 5.5h free on weekdays
 
-    const hoursUsed = timerMinutes / 60 + (entry?.studyHours ?? 0)
+    // Calculate hours from task completions where unit is 'hours'
+    const taskHours = taskCompletions.reduce((sum, c) => {
+      if (c.task && c.task.unit === 'hours') {
+        return sum + c.achieved
+      }
+      return sum
+    }, 0)
+
+    const hoursUsed = timerMinutes / 60 + (entry?.workHours ?? 0) + (entry?.studyHours ?? 0) + taskHours
     const hoursRemaining = Math.max(0, totalHours - hoursUsed)
 
     return {

@@ -1,5 +1,6 @@
 import { timerRepository } from '../repositories/timer.repository.js'
 import { goalProgressService } from './goalProgress.service.js'
+import { prisma } from '../db.js'
 
 export const timerService = {
   async start(userId: number, type: string) {
@@ -18,8 +19,25 @@ export const timerService = {
   async stop(userId: number) {
     const active = await timerRepository.findActiveByUser(userId)
     if (!active) throw new Error('No active timer')
-    const duration = Math.floor((Date.now() - active.startTime.getTime()) / 60000)
-    const updatedSession = await timerRepository.update(active.id, { endTime: new Date(), duration })
+    const endTime = new Date()
+    const duration = Math.floor((endTime.getTime() - active.startTime.getTime()) / 60000)
+    
+    console.log('Stopping timer:', { 
+      startTime: active.startTime, 
+      endTime, 
+      duration 
+    })
+    
+    // Update the timer session with end time and duration using direct Prisma update
+    const updatedSession = await prisma.timerSession.update({
+      where: { id: active.id },
+      data: {
+        endTime,
+        duration
+      }
+    })
+    
+    console.log('Updated session:', updatedSession)
     
     // Update goal progress when timer is stopped
     if (active.type === 'work') {
@@ -27,7 +45,7 @@ export const timerService = {
         await goalProgressService.updateGoalsFromTimerSessions(
           userId,
           new Date(active.startTime),
-          new Date()
+          endTime
         )
       } catch (error) {
         console.error('Error updating goals from timer session:', error)
