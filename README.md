@@ -70,35 +70,36 @@ A full‑stack TypeScript web application for tracking daily habits, work/study 
 
 | Layer | Tech |
 |---|---|
-| **Backend** | Node.js, Express 5, TypeScript, Prisma 7, SQLite (via `better-sqlite3`), JWT, Swagger |
-| **Frontend** | React 19, Vite 6, TypeScript, Tailwind CSS 4, Zustand, Recharts, React Router 7 |
-| **Deployment** | PM2, served at `ashishserver.space` |
+| **Backend** | Express 5, Prisma 7 (SQLite via better-sqlite3), JWT auth, Swagger UI |
+| **Frontend** | React 19, Vite 6, TypeScript, Tailwind CSS 4, Zustand, Recharts, React Router 7, Axios |
+| **Deployment** | PM2 (`ecosystem.config.cjs`), production at `/root/apps/daily/` |
 
 ---
 
 ## Repository Structure
 ```
 Daily/
-├─ backend/
-│  ├─ src/
-│  │  ├─ controllers/   # Request handlers per domain
-│  │  ├─ routes/        # Express routers per domain
-│  │  ├─ services/      # Business logic
-│  │  ├─ repositories/  # Prisma queries
-│  │  ├─ middleware/    # auth.ts (JWT authentication)
-│  │  ├─ db.ts          # Prisma client singleton
-│  │  ├─ swagger.ts     # Swagger spec config
-│  │  └─ index.ts       # App entry point + cron jobs
-│  └─ prisma/schema.prisma
-├─ frontend/
-│  └─ src/
-│     ├─ pages/          # Route‑level components
-│     ├─ components/     # Shared UI (StatCard, Sidebar, Layout)
-│     ├─ store/          # Zustand stores (auth, timer)
-│     ├─ api/            # Axios clients (auth, dashboard, …)
-│     ├─ types/          # Shared TypeScript types
-│     └─ utils/          # Helpers (e.g., yearCalc)
-└─ ecosystem.config.cjs  # PM2 configuration
+├── backend/
+│   ├── src/
+│   │   ├── controllers/   # Request handlers (one per domain)
+│   │   ├── routes/        # Express routers (one per domain)
+│   │   ├── services/      # Business logic
+│   │   ├── repositories/  # Prisma DB queries
+│   │   ├── middleware/    # auth.ts (JWT authenticate)
+│   │   ├── db.ts          # Prisma client singleton
+│   │   ├── swagger.ts     # Swagger spec config
+│   │   └── index.ts       # App entry point, cron jobs
+│   └── prisma/
+│       └── schema.prisma  # Data models
+├── frontend/
+│   └── src/
+│       ├── pages/         # Route-level components
+│       ├── components/    # Shared UI (StatCard, Sidebar, Layout)
+│       ├── store/         # Zustand stores (auth, timer)
+│       ├── api/           # Axios API clients (one per domain)
+│       ├── types/         # Shared TypeScript types
+│       └── utils/         # yearCalc helper
+└── ecosystem.config.cjs   # PM2 configuration
 ```
 
 ---
@@ -110,26 +111,21 @@ Daily/
 - npm ≥ 10
 - Git
 
-### Backend
-```bash
-cd backend
-npm install
-# Create a .env file (see below) – PORT defaults to 3001 in production
-npm run dev        # starts the API on http://localhost:3001
-```
+### Development
+Run all commands from the **repo root** (npm workspaces).
 
-### Frontend
 ```bash
-cd frontend
-npm install
-npm run dev        # Vite dev server on http://localhost:5173
-```
+# From root
+npm run dev:backend             # tsx watch (hot reload)
+npm run dev:frontend            # Vite dev server (port 5173)
+npm run build                   # build both packages
+npm run build:backend           # tsc → backend/dist/
+npm run build:frontend          # tsc + vite build → frontend/dist/
+npm run start:backend           # node backend/dist/index.js
 
-Both services use **npm workspaces**, so you can also run them from the root:
-```bash
-npm run dev:backend   # backend only
-npm run dev:frontend  # frontend only
-npm run dev           # start both concurrently (via your terminal multiplexer)
+# Or run workspace scripts directly
+npm run dev -w backend
+npm run dev -w frontend
 ```
 
 ---

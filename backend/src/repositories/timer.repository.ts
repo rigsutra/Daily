@@ -10,7 +10,7 @@ export const timerRepository = {
       orderBy: { startTime: 'desc' },
     }),
 
-  update: (id: number, data: Partial<{ endTime: Date; duration: number; paused: boolean }>) =>
+  update: (id: number, data: Partial<{ endTime: Date; duration: number; paused: boolean; startTime: Date }>) =>
     prisma.timerSession.update({ where: { id }, data }),
 
   findByUserAndDate: (userId: number, date: Date) => {

@@ -20,7 +20,6 @@ model User {
   dailyEntries     DailyEntry[]
   deleteRequests   DeleteRequest[]
   yearCalculations YearCalculation[]
-  userDevices      UserDevice[]
 }
 
 model DailyEntry {

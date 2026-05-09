@@ -5,7 +5,13 @@ import { prisma } from '../db.js'
 export const timerService = {
   async start(userId: number, type: string) {
     const active = await timerRepository.findActiveByUser(userId)
-    if (active) throw new Error('A timer is already running. Stop it first.')
+    if (active) {
+      if (active.paused) {
+        // Resume: reset startTime to now so elapsed counts from 0; existing duration accumulates on stop
+        return timerRepository.update(active.id, { paused: false, startTime: new Date() })
+      }
+      throw new Error('A timer is already running. Stop it first.')
+    }
     return timerRepository.create({ userId, type, startTime: new Date() })
   },
 
@@ -20,7 +26,8 @@ export const timerService = {
     const active = await timerRepository.findActiveByUser(userId)
     if (!active) throw new Error('No active timer')
     const endTime = new Date()
-    const duration = Math.floor((endTime.getTime() - active.startTime.getTime()) / 60000)
+    const additionalMinutes = Math.floor((endTime.getTime() - active.startTime.getTime()) / 60000)
+    const duration = (active.duration ?? 0) + additionalMinutes
     
     console.log('Stopping timer:', { 
       startTime: active.startTime, 
