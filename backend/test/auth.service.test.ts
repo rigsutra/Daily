@@ -1,7 +1,5 @@
 import { prisma, bcrypt, jwt, JWT_SECRET } from './setup';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-key';
-
 describe('Auth Service Tests', () => {
   // Create a unique user for each test to avoid conflicts
   const testEmail = `test-${Date.now()}@example.com`;

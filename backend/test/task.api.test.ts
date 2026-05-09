@@ -50,7 +50,7 @@ app.get('/api/tasks', async (req: any, res: any) => {
 
 app.post('/api/tasks', async (req: any, res: any) => {
   try {
-    const userId = 1; // Mock user ID
+    const userId = (jwt.verify(req.headers.authorization?.split(' ')[1], JWT_SECRET) as any).userId;
     const task = await prisma.task.create({
       data: { ...req.body, userId }
     });
