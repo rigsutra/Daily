@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { prisma } from '../db.js'
+import { goalRepository } from '../repositories/goal.repository.js'
 import { goalProgressService } from '../services/goalProgress.service.js'
 import { AuthRequest } from '../middleware/auth.js'
 
@@ -57,15 +57,8 @@ export const goalProgressController = {
     try {
       const { achievedHours } = req.body
       const goal = await goalProgressService.getGoalProgress(req.userId!, Number(req.params.goalId))
-      
-      const updatedGoal = await prisma.goal.update({
-        where: { id: Number(req.params.goalId) },
-        data: { 
-          achievedHours,
-          status: achievedHours >= goal.targetHours ? 'completed' : 'active'
-        }
-      })
-      
+      const status = achievedHours >= goal.targetHours ? 'completed' : 'active'
+      const updatedGoal = await goalRepository.update(Number(req.params.goalId), { achievedHours, status })
       res.json(updatedGoal)
     } catch (e: any) {
       res.status(500).json({ error: e.message })

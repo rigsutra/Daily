@@ -15,9 +15,9 @@ export default {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^express$': '<rootDir>/node_modules/express/index.js'
+    '^express$': '<rootDir>/../node_modules/express/index.js'
   },
   transformIgnorePatterns: [
-    '<rootDir>/node_modules/(?!express)'
+    '<rootDir>/../node_modules/(?!express)'
   ]
 };

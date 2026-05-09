@@ -60,7 +60,7 @@ export default function Tasks() {
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-2xl font-bold text-white">Task Board</h2>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => setShowForm(true)}
           className="flex-shrink-0 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors"
         >
           + New Task

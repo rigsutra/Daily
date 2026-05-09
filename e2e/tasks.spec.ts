@@ -247,6 +247,7 @@ test.describe('Tasks', () => {
       )
       await page.getByRole('button', { name: 'Create' }).click()
       await res
+      await expect(page.getByPlaceholder('Title (e.g. Gym)')).not.toBeVisible()
     }
     for (const title of titles) {
       await expect(page.getByText(title)).toBeVisible()

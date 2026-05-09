@@ -11,6 +11,7 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+  envDir: '../',
   server: {
     port: 5173,
     proxy: {

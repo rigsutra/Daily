@@ -5,6 +5,11 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const backendDir = path.resolve(__dirname, '..');
 
 const TEST_DATABASE_URL = 'file:./prisma/test.db';
 const JWT_SECRET = 'test-jwt-secret-key';
@@ -20,7 +25,6 @@ beforeAll(async () => {
   try {
     console.log('Setting up test database...');
 
-    const backendDir = 'C:/projects/Daily/backend';
     const testDbPath = path.join(backendDir, 'prisma', 'test.db');
 
     if (fs.existsSync(testDbPath)) {

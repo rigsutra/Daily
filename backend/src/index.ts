@@ -1,4 +1,10 @@
-import 'dotenv/config'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { config } from 'dotenv'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+config({ path: join(__dirname, '../../.env') })
+
 import express from 'express'
 import cors from 'cors'
 import cron from 'node-cron'
