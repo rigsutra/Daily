@@ -41,14 +41,7 @@ export default function Dashboard() {
     const next = { ...form, ...patch }
     setForm(next)
     const entry = await dashboardApi.updateDaily(next)
-    setDaily(prev => prev ? {
-      ...prev,
-      workHours: entry.workHours,
-      studyHours: entry.studyHours,
-      gymCompleted: entry.gymCompleted,
-      waterLiters: entry.waterLiters,
-      sleepHours: entry.sleepHours,
-    } : prev)
+    setDaily(entry)
   }, [form])
 
   if (loading) return <div className="flex items-center justify-center h-full text-gray-400">Loading…</div>

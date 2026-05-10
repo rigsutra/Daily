@@ -186,7 +186,9 @@ export const dashboardService = {
   }) {
     const today = startOf(new Date())
     const productiveHours = (data.workHours ?? 0) + (data.studyHours ?? 0)
-    return dashboardRepository.upsertDailyEntry(userId, today, { ...data, productiveHours })
+    await dashboardRepository.upsertDailyEntry(userId, today, { ...data, productiveHours })
+    // After updating, return the full dashboard data
+    return this.getDaily(userId)
   },
 
   getYearly: (_userId: number) => calculateAvailableYearTime(),
