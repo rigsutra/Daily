@@ -30,7 +30,7 @@ api.interceptors.response.use(
         if (config.__retryCount < MAX_RETRIES) {
           config.__retryCount += 1
           // simple backoff (optional)
-          await new Promise(res => setTimeout(res, 500))
+          await new Promise(res => setTimeout(res, 1500))
           return api.request(config)
         }
       }
