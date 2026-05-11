@@ -6,6 +6,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc --outDir dist",
     "start": "node dist/index.js",
+    "prisma:generate": "npx prisma generate",
+    "prisma:db:push": "npx prisma db push",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --detectOpenHandles",
     "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --watch"
   }

@@ -2,129 +2,164 @@ import request from 'supertest';
 import express from 'express';
 import { prisma, bcrypt, jwt, JWT_SECRET } from './setup';
 
-// Create a test Express app without importing from source files
 const app = express();
 app.use(express.json());
 
-// Manually define routes for testing
-app.post('/api/register', async (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword }
-    });
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'name, email and password are required' });
+    }
+    const hashed = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({ data: { name, email, password: hashed } });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email } });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
   }
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-    
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
-    
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+  } catch (e: any) {
+    res.status(401).json({ error: e.message });
   }
 });
 
-describe('Auth API Tests (Simplified)', () => {
-  describe('POST /api/register', () => {
-    it('should register a new user', async () => {
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Test User',
-          email: `register-${Date.now()}@example.com`,
-          password: 'password123'
-        });
+app.get('/api/auth/profile', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: number };
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ id: user.id, name: user.name, email: user.email, createdAt: user.createdAt });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
 
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('token');
-      expect(response.body).toHaveProperty('user');
-      expect(response.body.user.email).toContain('register-');
+describe('Auth API — Registration, Login, Profile', () => {
+  describe('POST /api/auth/register', () => {
+    it('registers a new user and returns token + user object', async () => {
+      const email = `reg-${Date.now()}@example.com`;
+      const res = await request(app).post('/api/auth/register').send({ name: 'Alice', email, password: 'pass1234' });
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('user');
+      expect(res.body.user.email).toBe(email);
+      expect(res.body.user.name).toBe('Alice');
+      expect(res.body.user).not.toHaveProperty('password');
     });
 
-    it('should reject duplicate email', async () => {
-      const email = `duplicate-${Date.now()}@example.com`;
-      
-      // First registration
-      await request(app)
-        .post('/api/register')
-        .send({
-          name: 'User 1',
-          email,
-          password: 'password123'
-        });
+    it('token is a valid JWT containing userId', async () => {
+      const email = `reg-jwt-${Date.now()}@example.com`;
+      const res = await request(app).post('/api/auth/register').send({ name: 'Bob', email, password: 'pass1234' });
+      const decoded: any = jwt.verify(res.body.token, JWT_SECRET);
+      expect(decoded.userId).toBe(res.body.user.id);
+    });
 
-      // Second registration with same email
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          name: 'User 2',
-          email,
-          password: 'password123'
-        });
+    it('rejects missing name', async () => {
+      const res = await request(app).post('/api/auth/register').send({ email: `no-name-${Date.now()}@example.com`, password: 'pass1234' });
+      expect(res.status).toBe(400);
+    });
 
-      expect(response.status).toBe(400);
+    it('rejects missing email', async () => {
+      const res = await request(app).post('/api/auth/register').send({ name: 'Charlie', password: 'pass1234' });
+      expect(res.status).toBe(400);
+    });
+
+    it('rejects missing password', async () => {
+      const res = await request(app).post('/api/auth/register').send({ name: 'Dave', email: `no-pass-${Date.now()}@example.com` });
+      expect(res.status).toBe(400);
+    });
+
+    it('rejects duplicate email', async () => {
+      const email = `dup-${Date.now()}@example.com`;
+      await request(app).post('/api/auth/register').send({ name: 'Eve', email, password: 'pass1234' });
+      const res = await request(app).post('/api/auth/register').send({ name: 'Eve 2', email, password: 'pass5678' });
+      expect(res.status).toBe(400);
+    });
+
+    it('password is hashed in the database', async () => {
+      const email = `hash-${Date.now()}@example.com`;
+      const res = await request(app).post('/api/auth/register').send({ name: 'Frank', email, password: 'plaintext' });
+      const stored = await prisma.user.findUnique({ where: { email } });
+      expect(stored?.password).not.toBe('plaintext');
+      const valid = await bcrypt.compare('plaintext', stored!.password);
+      expect(valid).toBe(true);
     });
   });
 
-  describe('POST /api/login', () => {
-    it('should login with valid credentials', async () => {
-      const email = `login-${Date.now()}@example.com`;
-      
-      // Register user first
-      await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Login Test',
-          email,
-          password: 'password123'
-        });
+  describe('POST /api/auth/login', () => {
+    let loginEmail: string;
 
-      // Login
-      const response = await request(app)
-        .post('/api/login')
-        .send({
-          email,
-          password: 'password123'
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('token');
+    beforeAll(async () => {
+      loginEmail = `login-${Date.now()}@example.com`;
+      await request(app).post('/api/auth/register').send({ name: 'Grace', email: loginEmail, password: 'correctpass' });
     });
 
-    it('should reject invalid password', async () => {
-      const email = `login-fail-${Date.now()}@example.com`;
-      
-      // Register user first
-      await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Login Fail',
-          email,
-          password: 'password123'
-        });
+    it('logs in with correct credentials and returns token', async () => {
+      const res = await request(app).post('/api/auth/login').send({ email: loginEmail, password: 'correctpass' });
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('token');
+      expect(res.body.user.email).toBe(loginEmail);
+    });
 
-      // Login with wrong password
-      const response = await request(app)
-        .post('/api/login')
-        .send({
-          email,
-          password: 'wrongpassword'
-        });
+    it('token is verifiable with JWT_SECRET', async () => {
+      const res = await request(app).post('/api/auth/login').send({ email: loginEmail, password: 'correctpass' });
+      expect(() => jwt.verify(res.body.token, JWT_SECRET)).not.toThrow();
+    });
 
-      expect(response.status).toBe(401);
+    it('rejects wrong password with 401', async () => {
+      const res = await request(app).post('/api/auth/login').send({ email: loginEmail, password: 'wrongpass' });
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects non-existent email with 401', async () => {
+      const res = await request(app).post('/api/auth/login').send({ email: `nobody-${Date.now()}@example.com`, password: 'pass' });
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/auth/profile', () => {
+    let token: string;
+    let userId: number;
+    let userEmail: string;
+
+    beforeAll(async () => {
+      userEmail = `profile-${Date.now()}@example.com`;
+      const res = await request(app).post('/api/auth/register').send({ name: 'Helen', email: userEmail, password: 'pass1234' });
+      token = res.body.token;
+      userId = res.body.user.id;
+    });
+
+    it('returns user profile with id, name, email, createdAt', async () => {
+      const res = await request(app).get('/api/auth/profile').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(userId);
+      expect(res.body.email).toBe(userEmail);
+      expect(res.body.name).toBe('Helen');
+      expect(res.body).toHaveProperty('createdAt');
+      expect(res.body).not.toHaveProperty('password');
+    });
+
+    it('rejects request without token', async () => {
+      const res = await request(app).get('/api/auth/profile');
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects request with invalid token', async () => {
+      const res = await request(app).get('/api/auth/profile').set('Authorization', 'Bearer not.a.real.token');
+      expect(res.status).toBe(401);
     });
   });
 });

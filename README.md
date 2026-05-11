@@ -57,11 +57,6 @@ A full‑stack TypeScript web application for tracking daily habits, work/study 
   - Not completed tasks
   - Mandatory tasks (with completion status)
 
-### Mobile Usage Sync
-- Unauthenticated POST endpoint (`/api/mobile-usage/sync`) to ingest screen‑time data from a phone.
-- `/api/mobile-usage/today` returns today’s per‑app usage and total minutes.
-- Settings page displays payload format and user‑ID for mobile automation.
-
 ### Auth
 - Register / login with JWT and bcrypt hashed passwords.
 - Protected routes require `Bearer <token>` (except login, register, health, and mobile‑usage endpoints).
@@ -173,12 +168,13 @@ Key route groups (see the Swagger UI for full details):
 - **Timer** – `/api/timer/*` (start, pause, resume, stop, get sessions).
 - **Tasks** – `/api/tasks/*` (CRUD, completions).
 - **Goals** – `/api/goals/*` (CRUD, progress).
-- **Mobile Usage** – `/api/mobile-usage/sync` (unauthenticated POST), `/api/mobile-usage/today` (GET).
 - **Health** – `/api/health`.
 
 ---
 
 ## Contributing
+
+_This project follows the standard contributing workflow. See the section "LLM Instructions" for guidance when developing or extending the codebase using AI assistants._
 Contributions are welcome! Please follow these steps:
 1. Fork the repository.
 2. Create a feature branch (`git checkout -b feat/awesome-feature`).
